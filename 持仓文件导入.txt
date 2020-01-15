@@ -1,0 +1,450 @@
+Attribute VB_Name = "持仓文件导入"
+Sub readme()
+Path = ThisWorkbook.Sheets("路径").Range("path").Value
+t_day = ThisWorkbook.Sheets("路径").Range("date").Value
+ThisWorkbook.Sheets("所有持仓").Range("A:P").Clear
+ThisWorkbook.Sheets("结果").Range("A:AB,AE:AK").Clear
+Set Workbook_1 = Workbooks.Open(Path & "\债券持仓明细表_" & t_day)
+    Range("A2:P2").Select
+    Range(Selection, Selection.End(xlDown)).Select
+    Selection.Copy
+    Windows("信用月报.xlsm").Activate
+    ThisWorkbook.Worksheets("所有持仓").Activate
+    Range("A1").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Application.CutCopyMode = False
+    
+        Dim s As Worksheet
+        Set s = ThisWorkbook.Sheets("所有持仓")
+        
+        For j = 17 To 22
+        
+            If s.Cells(2, j).HasFormula Then
+                
+                ' Clear contents
+                If s.Range(s.Cells(2, j), s.Cells(65535, j).End(xlUp)).Rows.Count > 1 Then
+                    s.Range(s.Cells(3, j), s.Cells(65535, j).End(xlUp)).ClearContents
+                End If
+                
+                ' Fill in formula
+                lastdatarow = s.Range("A65535").End(xlUp).Row
+                ' if row<=2 then don't need to fill
+                If lastdatarow > 2 Then
+                    s.Cells(2, j).AutoFill Destination:=s.Range(s.Cells(2, j), s.Cells(lastdatarow, j))
+                End If
+                
+            End If
+        
+        Next j
+
+Workbook_1.Close
+
+End Sub
+
+Sub get_data1()
+ThisWorkbook.Worksheets("T7&T8").Select
+ActiveWorkbook.RefreshAll
+ActiveSheet.PivotTables("数据透视表1").PivotFields("内部主体评级").CurrentPage = "(All)"
+    With ActiveSheet.PivotTables("数据透视表1").PivotFields("内部主体评级")
+        .PivotItems("T1").Visible = False
+        .PivotItems("T2").Visible = False
+        .PivotItems("T3").Visible = False
+        .PivotItems("T4").Visible = False
+        .PivotItems("T5").Visible = False
+        .PivotItems("T6").Visible = False
+        .PivotItems("(blank)").Visible = False
+        .PivotItems("T9").Visible = False
+        .PivotItems("T10").Visible = False
+    End With
+ActiveSheet.PivotTables("数据透视表1").PivotFields("基金类别").CurrentPage = "(All)"
+    With ActiveSheet.PivotTables("数据透视表1").PivotFields("基金类别")
+        .PivotItems("通道类专户").Visible = False
+        .PivotItems("主动管理专户").Visible = False
+        .PivotItems("(blank)").Visible = False
+        .PivotItems("#N/A").Visible = False
+    End With
+Set s = ThisWorkbook.Worksheets("T7&T8")
+a = Range(s.Cells(1, 3), s.Cells(6, 3).End(xlDown)).Rows.Count - 1
+b = 0
+For h = 6 To a
+    If s.Cells(h, 3) < 0.1 Then
+    Range(s.Cells(6, 1), s.Cells(h - 1, 4)).Select
+    Selection.Copy
+    ThisWorkbook.Worksheets("结果").Activate
+    q = h - 6
+    Worksheets("结果").Range("A1") = q
+    Range("A2").Select
+     Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Application.CutCopyMode = False
+    Exit For
+    End If
+    b = b + s.Cells(h, 2)
+Next h
+Range("B1") = b
+ThisWorkbook.Worksheets("T7&T8").Select
+ActiveSheet.PivotTables("数据透视表1").PivotFields("基金类别").CurrentPage = "(All)"
+    With ActiveSheet.PivotTables("数据透视表1").PivotFields("基金类别")
+        .PivotItems("通道类专户").Visible = True
+        .PivotItems("主动管理专户").Visible = True
+        .PivotItems("(blank)").Visible = True
+        .PivotItems("#N/A").Visible = True
+        .PivotItems("(blank)").Visible = False
+        .PivotItems("通道类专户").Visible = False
+        .PivotItems("公募基金").Visible = False
+        .PivotItems("#N/A").Visible = False
+    End With
+Set v = ThisWorkbook.Worksheets("T7&T8")
+c = Range(v.Cells(1, 3), v.Cells(6, 3).End(xlDown)).Rows.Count - 1
+D = 0
+For I = 6 To c
+    If v.Cells(I, 3) < 0.1 Then
+    Range(v.Cells(6, 1), v.Cells(I - 1, 4)).Select
+    Selection.Copy
+    ThisWorkbook.Worksheets("结果").Activate
+    r = I - 6
+    Worksheets("结果").Range("E1") = r
+    Range("E2").Select
+     Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Application.CutCopyMode = False
+    Exit For
+    End If
+    D = D + v.Cells(I, 2)
+Next I
+Range("F1") = D
+ThisWorkbook.Worksheets("T7&T8").Select
+ActiveSheet.PivotTables("数据透视表1").PivotFields("内部主体评级").CurrentPage = "(All)"
+    With ActiveSheet.PivotTables("数据透视表1").PivotFields("内部主体评级")
+        .PivotItems("T1").Visible = True
+        .PivotItems("T2").Visible = True
+        .PivotItems("T3").Visible = True
+        .PivotItems("T4").Visible = True
+        .PivotItems("T5").Visible = True
+        .PivotItems("T6").Visible = True
+        .PivotItems("(blank)").Visible = True
+        .PivotItems("T9").Visible = True
+        .PivotItems("T10").Visible = True
+    End With
+    ActiveSheet.PivotTables("数据透视表1").PivotFields("内部主体评级"). _
+        EnableMultiplePageItems = True
+    ActiveSheet.PivotTables("数据透视表1").PivotFields("基金类别").CurrentPage = "(All)"
+    With ActiveSheet.PivotTables("数据透视表1").PivotFields("基金类别")
+        .PivotItems("公募基金").Visible = True
+        .PivotItems("通道类专户").Visible = True
+        .PivotItems("(blank)").Visible = True
+        .PivotItems("#N/A").Visible = True
+    End With
+    ActiveSheet.PivotTables("数据透视表1").PivotFields("基金类别").EnableMultiplePageItems _
+        = True
+End Sub
+
+Sub get_data2()
+Sheets("所有持仓").Select
+Range("A1:V1").Select
+ActiveSheet.Range(Selection, Selection.End(xlDown)).AutoFilter Field:=20, Criteria1:="公募基金"
+ActiveSheet.Range(Selection, Selection.End(xlDown)).AutoFilter Field:=22, Criteria1:=">=0.05"
+Range("W1").Select
+Selection.Copy
+Sheets("结果").Select
+Range("I1").Select
+Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+Application.CutCopyMode = False
+Sheets("所有持仓").Select
+Range("A1:V1").Select
+ActiveSheet.Range(Selection, Selection.End(xlDown)).AutoFilter Field:=6, Criteria1:="AA"
+Range("W1").Select
+Selection.Copy
+Sheets("结果").Select
+Range("J1").Select
+Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+Application.CutCopyMode = False
+Sheets("所有持仓").Select
+Range("B2:B65535,D2:H65535,U2:V65535").Select
+Selection.Copy
+Sheets("结果").Select
+Range("I2").Select
+Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+Application.CutCopyMode = False
+Sheets("所有持仓").Select
+ActiveSheet.Range(Selection, Selection.End(xlDown)).AutoFilter Field:=6, Criteria1:="AA-"
+Range("W1").Select
+Selection.Copy
+Sheets("结果").Select
+Range("K1").Select
+Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+Application.CutCopyMode = False
+Sheets("所有持仓").Select
+Range("B2:B65535,D2:H65535,U2:V65535").Select
+Selection.Copy
+Sheets("结果").Select
+lastdatarow = Range("I65535").End(xlUp).Row + 1
+Range("I" & lastdatarow).Select
+Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+Application.CutCopyMode = False
+Sheets("所有持仓").Select
+Range("A1:V1").Select
+ActiveSheet.Range(Selection, Selection.End(xlDown)).AutoFilter Field:=6
+ActiveSheet.Range(Selection, Selection.End(xlDown)).AutoFilter Field:=8, Criteria1:="=T7", _
+        Operator:=xlOr, Criteria2:="=T8"
+Range("W1").Select
+Selection.Copy
+Sheets("结果").Select
+Range("L1").Select
+Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+Application.CutCopyMode = False
+Sheets("所有持仓").Select
+Selection.AutoFilter
+End Sub
+Sub get_data3()
+Sheets("所有持仓").Select
+Range("A1:V1").Select
+ActiveSheet.Range(Selection, Selection.End(xlDown)).AutoFilter Field:=20, Criteria1:="公募基金"
+ActiveSheet.Range(Selection, Selection.End(xlDown)).AutoFilter Field:=17, Criteria1:="地方政府债"
+Range("W1").Select
+Selection.Copy
+Sheets("结果").Select
+Range("Q1").Select
+Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+Application.CutCopyMode = False
+Sheets("所有持仓").Select
+Range("B2:B65535,M2:M65535,D2:D65535,U2:V65535").Select
+Selection.Copy
+Sheets("结果").Select
+Range("Q2").Select
+Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+Application.CutCopyMode = False
+Sheets("所有持仓").Select
+Selection.AutoFilter
+End Sub
+Sub get_data4()
+Sheets("ABS").Select
+ActiveSheet.PivotTables("数据透视表2").PivotFields("基金类别").CurrentPage = "(All)"
+    With ActiveSheet.PivotTables("数据透视表2").PivotFields("基金类别")
+        .PivotItems("通道类专户").Visible = False
+        .PivotItems("#N/A").Visible = False
+        .PivotItems("(blank)").Visible = False
+    End With
+lastrownum = Range("B65535").End(xlUp).Row
+Range("B" & lastrownum).Select
+Selection.Copy
+Sheets("结果").Select
+Range("V1").Select
+Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+Application.CutCopyMode = False
+Sheets("ABS").Select
+ActiveSheet.PivotTables("数据透视表2").PivotFields("债项评级").CurrentPage = "(All)"
+    With ActiveSheet.PivotTables("数据透视表2").PivotFields("债项评级")
+        .PivotItems("AAA").Visible = False
+    End With
+ActiveSheet.PivotTables("数据透视表2").PivotFields("基金类别").CurrentPage = "(All)"
+    With ActiveSheet.PivotTables("数据透视表2").PivotFields("基金类别")
+        .PivotItems("主动管理专户").Visible = False
+    End With
+lastrownum1 = Range("B65535").End(xlUp).Row
+Range("B" & lastrownum1).Select
+Selection.ShowDetail = True
+ActiveSheet.Name = "分析1"
+Range("B2:B65535,D2:D65535,G2:G65535,I2:J65535,U2:V65535").Select
+Selection.Copy
+Sheets("结果").Select
+Range("V2").Select
+Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+Application.CutCopyMode = False
+Sheets("ABS").Select
+ActiveSheet.PivotTables("数据透视表2").PivotFields("债项评级").CurrentPage = "(All)"
+    With ActiveSheet.PivotTables("数据透视表2").PivotFields("债项评级")
+        .PivotItems("AAA").Visible = True
+    End With
+    ActiveSheet.PivotTables("数据透视表2").PivotFields("内部债项评级").CurrentPage = "(All)"
+    With ActiveSheet.PivotTables("数据透视表2").PivotFields("内部债项评级")
+        .PivotItems("T1").Visible = False
+        .PivotItems("T2").Visible = False
+        .PivotItems("T3").Visible = False
+        .PivotItems("T4").Visible = False
+        .PivotItems("T5").Visible = False
+        .PivotItems("T6").Visible = False
+        .PivotItems("不予评级").Visible = False
+        .PivotItems("(blank)").Visible = False
+        .PivotItems("T10").Visible = False
+        .PivotItems("T9").Visible = False
+    End With
+lastrownum2 = Range("B65535").End(xlUp).Row
+Range("B" & lastrownum1).Select
+Selection.ShowDetail = True
+ActiveSheet.Name = "分析2"
+Range("B2:B65535,D2:D65535,G2:G65535,I2:J65535,U2:V65535").Select
+Selection.Copy
+Sheets("结果").Select
+lastrownum3 = Range("V65535").End(xlUp).Row + 1
+Range("V" & lastrownum3).Select
+Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+Application.CutCopyMode = False
+ActiveSheet.Range("$V:$AB").RemoveDuplicates Columns:=Array(1, 2, 3, 4, 5 _
+        , 6, 7), Header:=xlNo
+Sheets("ABS").Select
+ ActiveSheet.PivotTables("数据透视表2").PivotFields("内部债项评级").CurrentPage = "(All)"
+    With ActiveSheet.PivotTables("数据透视表2").PivotFields("内部债项评级")
+        .PivotItems("T1").Visible = True
+        .PivotItems("T10").Visible = True
+        .PivotItems("T2").Visible = True
+        .PivotItems("T3").Visible = True
+        .PivotItems("T4").Visible = True
+        .PivotItems("T5").Visible = True
+        .PivotItems("T6").Visible = True
+        .PivotItems("T9").Visible = True
+        .PivotItems("不予评级").Visible = True
+        .PivotItems("(blank)").Visible = True
+    End With
+    ActiveSheet.PivotTables("数据透视表2").PivotFields("内部债项评级"). _
+        EnableMultiplePageItems = True
+    ActiveSheet.PivotTables("数据透视表2").PivotFields("基金类别").CurrentPage = "(All)"
+    With ActiveSheet.PivotTables("数据透视表2").PivotFields("基金类别")
+        .PivotItems("主动管理专户").Visible = True
+        .PivotItems("公募基金").Visible = False
+    End With
+    ActiveSheet.PivotTables("数据透视表2").PivotFields("基金类别").EnableMultiplePageItems _
+        = True
+    ActiveSheet.PivotTables("数据透视表2").PivotFields("债项评级").CurrentPage = "(All)"
+    With ActiveSheet.PivotTables("数据透视表2").PivotFields("债项评级")
+        .PivotItems("AAA").Visible = False
+    End With
+    ActiveSheet.PivotTables("数据透视表2").PivotFields("债项评级").EnableMultiplePageItems _
+        = True
+lastrownum4 = Range("B65535").End(xlUp).Row
+Range("B" & lastrownum4).Select
+Selection.ShowDetail = True
+ActiveSheet.Name = "分析3"
+Range("B2:B65535,D2:D65535,G2:G65535,I2:J65535,U2:V65535").Select
+Selection.Copy
+Sheets("结果").Select
+Range("AE2").Select
+Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+Application.CutCopyMode = False
+Sheets("ABS").Select
+ActiveSheet.PivotTables("数据透视表2").PivotFields("债项评级").CurrentPage = "(All)"
+    With ActiveSheet.PivotTables("数据透视表2").PivotFields("债项评级")
+        .PivotItems("AAA").Visible = True
+    End With
+ActiveSheet.PivotTables("数据透视表2").PivotFields("内部债项评级").CurrentPage = "(All)"
+    With ActiveSheet.PivotTables("数据透视表2").PivotFields("内部债项评级")
+        .PivotItems("T1").Visible = False
+        .PivotItems("T2").Visible = False
+        .PivotItems("T3").Visible = False
+        .PivotItems("T4").Visible = False
+        .PivotItems("T5").Visible = False
+        .PivotItems("T6").Visible = False
+        .PivotItems("不予评级").Visible = False
+        .PivotItems("(blank)").Visible = False
+        .PivotItems("T10").Visible = False
+        .PivotItems("T9").Visible = False
+    End With
+lastrownum5 = Range("B65535").End(xlUp).Row
+Range("B" & lastrownum5).Select
+Selection.ShowDetail = True
+ActiveSheet.Name = "分析4"
+Range("B2:B65535,D2:D65535,G2:G65535,I2:J65535,U2:V65535").Select
+Selection.Copy
+Sheets("结果").Select
+lastrownum6 = Range("AE65535").End(xlUp).Row + 1
+Range("AE" & lastrownum6).Select
+Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+Application.CutCopyMode = False
+ActiveSheet.Range("$AE:$AK").RemoveDuplicates Columns:=Array(1, 2, 3, 4, 5 _
+        , 6, 7), Header:=xlNo
+Sheets("ABS").Select
+ActiveSheet.PivotTables("数据透视表2").PivotFields("内部债项评级").CurrentPage = "(All)"
+    With ActiveSheet.PivotTables("数据透视表2").PivotFields("内部债项评级")
+        .PivotItems("T1").Visible = True
+        .PivotItems("T10").Visible = True
+        .PivotItems("T2").Visible = True
+        .PivotItems("T3").Visible = True
+        .PivotItems("T4").Visible = True
+        .PivotItems("T5").Visible = True
+        .PivotItems("T6").Visible = True
+        .PivotItems("T9").Visible = True
+        .PivotItems("不予评级").Visible = True
+        .PivotItems("(blank)").Visible = True
+    End With
+lastrownum_1 = Range("B65535").End(xlUp).Row - 7
+lastrownum_2 = lastrownum - 7 - lastrownum_1
+Sheets("结果").Select
+Range("X1") = lastrownum_1
+Range("W1") = lastrownum_2
+ Dim s As Worksheet
+        Set s = ThisWorkbook.Sheets("结果")
+        
+        For j = 29 To 30
+        
+            If s.Cells(2, j).HasFormula Then
+                
+                ' Clear contents
+                If s.Range(s.Cells(2, j), s.Cells(65535, j).End(xlUp)).Rows.Count > 1 Then
+                    s.Range(s.Cells(3, j), s.Cells(65535, j).End(xlUp)).ClearContents
+                End If
+                
+                ' Fill in formula
+                lastdatarow = s.Range("V65535").End(xlUp).Row
+                ' if row<=2 then don't need to fill
+                If lastdatarow > 2 Then
+                    s.Cells(2, j).AutoFill Destination:=s.Range(s.Cells(2, j), s.Cells(lastdatarow, j))
+                End If
+                
+            End If
+        
+        Next j
+        For p = 38 To 39
+        
+            If s.Cells(2, p).HasFormula Then
+                
+                ' Clear contents
+                If s.Range(s.Cells(2, p), s.Cells(65535, p).End(xlUp)).Rows.Count > 1 Then
+                    s.Range(s.Cells(3, p), s.Cells(65535, p).End(xlUp)).ClearContents
+                End If
+                
+                ' Fill in formula
+                lastdatarow = s.Range("AE65535").End(xlUp).Row
+                ' if row<=2 then don't need to fill
+                If lastdatarow > 2 Then
+                    s.Cells(2, p).AutoFill Destination:=s.Range(s.Cells(2, p), s.Cells(lastdatarow, p))
+                End If
+                
+            End If
+        
+        Next p
+Sheets("ABS").Select
+ActiveSheet.PivotTables("数据透视表2").PivotFields("基金类别").CurrentPage = "(All)"
+    With ActiveSheet.PivotTables("数据透视表2").PivotFields("基金类别")
+        .PivotItems("公募基金").Visible = True
+        .PivotItems("通道类专户").Visible = True
+        .PivotItems("#N/A").Visible = True
+        .PivotItems("(blank)").Visible = True
+    End With
+Sheets("分析1").Select
+ActiveWindow.SelectedSheets.Delete
+Sheets("分析2").Select
+ActiveWindow.SelectedSheets.Delete
+Sheets("分析3").Select
+ActiveWindow.SelectedSheets.Delete
+Sheets("分析4").Select
+ActiveWindow.SelectedSheets.Delete
+Sheets("结果").Select
+lastrownum_3 = Range("V65535").End(xlUp).Row - 1
+lastrownum_4 = Range("AE65535").End(xlUp).Row - 1
+Range("Y1") = lastrownum_3
+Range("Z1") = lastrownum_4
+End Sub
